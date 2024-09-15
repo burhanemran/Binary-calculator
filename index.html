@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project X Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: black;
+            color: orange;
+        }
+        .title {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .calculator {
+            background-color: black;
+            border: 2px solid orange;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(255, 165, 0, 0.5);
+        }
+        .display {
+            background-color: #333;
+            color: orange;
+            padding: 10px;
+            text-align: right;
+            font-size: 24px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border: 1px solid orange;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        button, select, input {
+            padding: 10px;
+            font-size: 18px;
+            border: 1px solid orange;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: black;
+            color: orange;
+        }
+        button:hover, select:hover, input:focus {
+            background-color: #333;
+        }
+        .operator {
+            background-color: orange;
+            color: black;
+        }
+        .operator:hover {
+            background-color: #ffb732;
+        }
+        select, input {
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="title">Project X</div>
+    <div class="calculator">
+        <div class="display" id="display">0</div>
+        <select id="operation">
+            <option value="binaryAdd">Binary Addition</option>
+            <option value="binarySub">Binary Subtraction</option>
+            <option value="binaryToDenary">Binary to Denary</option>
+            <option value="denaryToBinary">Denary to Binary</option>
+            <option value="denaryToHex">Denary to Hexadecimal</option>
+            <option value="hexToDenary">Hexadecimal to Denary</option>
+            <option value="hexToBinary">Hexadecimal to Binary</option>
+            <option value="twosComplement">Two's Complement</option>
+            <option value="fileSizeConversion">File Size Conversion</option>
+            <option value="imageResolution">Image Resolution</option>
+            <option value="imageFileSize">Image File Size</option>
+        </select>
+        <input type="text" id="input1" placeholder="Input 1">
+        <input type="text" id="input2" placeholder="Input 2">
+        <input type="number" id="imageWidth" placeholder="Image Width" style="display: none;">
+        <input type="number" id="imageHeight" placeholder="Image Height" style="display: none;">
+        <select id="fromUnit" style="display: none;">
+            <option value="bits">Bits</option>
+            <option value="bytes">Bytes</option>
+            <option value="kib">KiB</option>
+            <option value="mib">MiB</option>
+            <option value="gib">GiB</option>
+            <option value="tib">TiB</option>
+            <option value="kb">KB</option>
+            <option value="mb">MB</option>
+            <option value="gb">GB</option>
+            <option value="tb">TB</option>
+        </select>
+        <select id="toUnit" style="display: none;">
+            <option value="bits">Bits</option>
+            <option value="bytes">Bytes</option>
+            <option value="kib">KiB</option>
+            <option value="mib">MiB</option>
+            <option value="gib">GiB</option>
+            <option value="tib">TiB</option>
+            <option value="kb">KB</option>
+            <option value="mb">MB</option>
+            <option value="gb">GB</option>
+            <option value="tb">TB</option>
+        </select>
+        <select id="colorDepth" style="display: none;">
+            <option value="1">1-bit (Black and White)</option>
+            <option value="8">8-bit (256 Colors)</option>
+            <option value="16">16-bit (High Color)</option>
+            <option value="24" selected>24-bit (True Color)</option>
+            <option value="32">32-bit (True Color with Alpha)</option>
+        </select>
+        <div class="buttons">
+            <button onclick="calculate()" class="operator">=</button>
+            <button onclick="clearDisplay()">C</button>
+        </div>
+    </div>
+
+    <script>
+        const display = document.getElementById('display');
+        const operation = document.getElementById('operation');
+        const input1 = document.getElementById('input1');
+        const input2 = document.getElementById('input2');
+        const imageWidth = document.getElementById('imageWidth');
+        const imageHeight = document.getElementById('imageHeight');
+        const fromUnit = document.getElementById('fromUnit');
+        const toUnit = document.getElementById('toUnit');
+        const colorDepth = document.getElementById('colorDepth');
+
+        operation.addEventListener('change', function() {
+            input1.style.display = 'block';
+            input2.style.display = 'none';
+            imageWidth.style.display = 'none';
+            imageHeight.style.display = 'none';
+            fromUnit.style.display = 'none';
+            toUnit.style.display = 'none';
+            colorDepth.style.display = 'none';
+
+            if (this.value === 'fileSizeConversion') {
+                fromUnit.style.display = 'block';
+                toUnit.style.display = 'block';
+            } else if (this.value === 'binaryAdd' || this.value === 'binarySub') {
+                input2.style.display = 'block';
+            } else if (this.value === 'imageResolution' || this.value === 'imageFileSize') {
+                input1.style.display = 'none';
+                imageWidth.style.display = 'block';
+                imageHeight.style.display = 'block';
+                if (this.value === 'imageFileSize') {
+                    colorDepth.style.display = 'block';
+                }
+            }
+        });
+
+        function calculate() {
+            const op = operation.value;
+            const val1 = input1.value;
+            const val2 = input2.value;
+            const width = parseInt(imageWidth.value);
+            const height = parseInt(imageHeight.value);
+
+            let result;
+
+            switch (op) {
+                case 'binaryAdd':
+                    result = addBinary(val1, val2);
+                    break;
+                case 'binarySub':
+                    result = subtractBinary(val1, val2);
+                    break;
+                case 'binaryToDenary':
+                    result = parseInt(val1, 2);
+                    break;
+                case 'denaryToBinary':
+                    result = parseInt(val1).toString(2);
+                    break;
+                case 'denaryToHex':
+                    result = parseInt(val1).toString(16).toUpperCase();
+                    break;
+                case 'hexToDenary':
+                    result = parseInt(val1, 16);
+                    break;
+                case 'hexToBinary':
+                    result = parseInt(val1, 16).toString(2);
+                    break;
+                case 'twosComplement':
+                    result = twosComplement(val1);
+                    break;
+                case 'fileSizeConversion':
+                    result = convertFileSize(parseFloat(val1), fromUnit.value, toUnit.value);
+                    break;
+                case 'imageResolution':
+                    result = calculateImageResolution(width, height);
+                    break;
+                case 'imageFileSize':
+                    result = calculateImageFileSize(width, height, parseInt(colorDepth.value));
+                    break;
+            }
+
+            display.textContent = result;
+        }
+
+        function addBinary(a, b) {
+            return (parseInt(a, 2) + parseInt(b, 2)).toString(2);
+        }
+
+        function subtractBinary(a, b) {
+            return (parseInt(a, 2) - parseInt(b, 2)).toString(2);
+        }
+
+        function twosComplement(binary) {
+            let complement = '';
+            let carry = 1;
+            for (let i = binary.length - 1; i >= 0; i--) {
+                if (binary[i] === '0') {
+                    complement = '1' + complement;
+                    carry = 0;
+                } else if (carry) {
+                    complement = '0' + complement;
+                } else {
+                    complement = '1' + complement;
+                }
+            }
+            return complement;
+        }
+
+        function convertFileSize(size, fromUnit, toUnit) {
+            const units = ['bits', 'bytes', 'kib', 'mib', 'gib', 'tib', 'kb', 'mb', 'gb', 'tb'];
+            const bases = [1, 8, 1024, 1024, 1024, 1024, 1000, 1000, 1000, 1000];
+            
+            let bits = size;
+            for (let i = 0; i < units.indexOf(fromUnit); i++) {
+                bits *= bases[i + 1];
+            }
+            
+            let result = bits;
+            for (let i = 0; i < units.indexOf(toUnit); i++) {
+                result /= bases[i + 1];
+            }
+            
+            return result.toFixed(2) + ' ' + toUnit;
+        }
+
+        function calculateImageResolution(width, height) {
+            return width * height + ' pixels';
+        }
+
+        function calculateImageFileSize(width, height, colorDepth) {
+            const bitsPerPixel = colorDepth;
+            const totalBits = width * height * bitsPerPixel;
+            const bytes = totalBits / 8;
+            if (bytes < 1024) {
+                return bytes.toFixed(2) + ' bytes';
+            } else if (bytes < 1024 * 1024) {
+                return (bytes / 1024).toFixed(2) + ' KB';
+            } else if (bytes < 1024 * 1024 * 1024) {
+                return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+            } else {
+                return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+            }
+        }
+
+        function clearDisplay() {
+            display.textContent = '0';
+            input1.value = '';
+            input2.value = '';
+            imageWidth.value = '';
+            imageHeight.value = '';
+        }
+    </script>
+</body>
+</html>
